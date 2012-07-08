@@ -1,6 +1,9 @@
 <?php
 namespace Kernel;
 
+use Kernel\Routing\Router;
+use Kernel\HTTP\Request;
+
 class Kernel
 {
     protected $classLoader = null;
@@ -24,6 +27,12 @@ class Kernel
         ));
         $loader->setFailNamespace(__DIR__.'/../source');
         $loader->register();
+
+        $request = new Request();
+        $request->bindGlobalVars();
+
+        $router = Router::getInstance($request, __DIR__.'/../config/routing.ini');
+        $route = $router->findRoute();
     }
 
     public function getClassLoader()
