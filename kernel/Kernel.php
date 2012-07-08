@@ -3,10 +3,17 @@ namespace Kernel;
 
 use Kernel\Routing\Router;
 use Kernel\HTTP\Request;
+use Kernel\Controller\AbstractController;
 
 class Kernel
 {
-    protected $classLoader = null;
+    private $classLoader = null;
+
+    private $request;
+
+    private $route;
+
+    private $controller;
 
     public function __construct($mode)
     {
@@ -28,11 +35,40 @@ class Kernel
         $loader->setFailNamespace(__DIR__.'/../source');
         $loader->register();
 
-        $request = new Request();
-        $request->bindGlobalVars();
+        $this->request = new Request();
+        $this->request->bindGlobalVars();
 
-        $router = Router::getInstance($request, __DIR__.'/../config/routing.ini');
-        $route = $router->findRoute();
+        $router = Router::getInstance($this->request, __DIR__.'/../config/routing.ini');
+        $this->route = $router->findRoute();
+
+        $this->controller = $this->findController($this->route->getAction());
+
+        return $this;
+    }
+
+    public function start()
+    {
+        $refMethod = new \ReflectionMethod($this->controller[0],
+            $this->controller[1]);
+        $paramNeedleArray = $refMethod->getParameters();
+        $router = Router::getInstance();
+        $paramArray = $router->getParameters($this->route);
+        $paramValuesArray = array_merge($this->route->getDefaults(), $paramArray);
+        $callParams = array();
+        foreach ($paramNeedleArray as $param) {
+            if (!isset($paramValuesArray[$param->getName()])) {
+                if ($param->isOptional()) {
+                    $callParams[$param->getPosition()] = $param->getDefaultValue();
+                } else {
+                    throw new Exceptions\MissingRequiredParameterException(
+                        $param->getName(), $this->controller[0], $this->controller[1]);
+                }
+            } else {
+                $callParams[$param->getPosition()] = $paramValuesArray[$param->getName()];
+            }
+        }
+
+        call_user_func_array($this->controller, $callParams);
     }
 
     public function getClassLoader()
@@ -44,4 +80,27 @@ class Kernel
         return $this->classLoader;
     }
 
+    protected function findController($pattern)
+    {
+        if (3 != count($parts = explode(':', $pattern))) {
+            throw new Exceptions\InvalidActionPatternException($pattern);
+        }
+
+        list($module, $controller, $action) = $parts;
+        $tryClass = $module. 'Module\\Controller\\'.$controller.'Controller';
+        if (!class_exists($tryClass)) {
+            throw new Exceptions\NotFoundControllerException($tryClass);
+        } else {
+            $controllerObject = new $tryClass;
+            if (!$controllerObject instanceof AbstractController) {
+                throw new Exceptions\NotFoundControllerException($tryClass);
+            }
+        }
+        $tryCallable = array($controllerObject, $action.'Action');
+        if (!is_callable($tryCallable)) {
+            Exceptions\NotFoundActionException($tryClass, $action.'Action');
+        } else {
+            return $tryCallable;
+        }
+    }
 }

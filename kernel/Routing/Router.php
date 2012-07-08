@@ -53,7 +53,7 @@ class Router
      * @param string $resource
      * @return \Kernel\Routing\Router
      */
-    public static function getInstance(Request $request, $resource)
+    public static function getInstance($request = null, $resource = null)
     {
         if (self::$instance === null){
             self::$instance = new static ($request, $resource);
@@ -169,7 +169,27 @@ class Router
         return urlencode($url);
     }
 
-    protected function __construct($request, $resource)
+    public function getParameters(Route $route)
+    {
+        $paths = explode('/', $this->request->getRequestURI());
+        $parts = explode('/', $route->getPattern());
+        $count = 0;
+        $parameters = array();
+        foreach ($parts as $part) {
+            if ($part != '' && preg_match('/^{[a-zA-Z]+}$/', $part)) {
+                if (isset($paths[$count])) {
+                    $parameters[substr($part, 1, strlen($part)-2)] = $paths[$count];
+                }
+            }
+            if ($part != '') {
+                ++$count;
+            }
+        }
+
+        return $parameters;
+    }
+
+    protected function __construct(Request $request, $resource)
     {
         $this->resource = $resource;
         $this->request = $request;
