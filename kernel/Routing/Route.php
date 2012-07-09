@@ -1,6 +1,8 @@
 <?php
 namespace Kernel\Routing;
 
+use Kernel\HTTP\Request;
+
 /**
  * Route entity.
  *
@@ -8,11 +10,6 @@ namespace Kernel\Routing;
  */
 class Route
 {
-    const GET_METHOD = 'GET';
-
-    const POST_METHOD = 'POST';
-
-    const ALL_METHOD = 'ALL';
     /**
      * @var string
      */
@@ -105,10 +102,10 @@ class Route
 
     public function setType($type) {
         $type = strtoupper($type);
-        if (self::POST_METHOD == $type || self::ALL_METHOD == $type ) {
+        if (Request::POST_METHOD == $type || Request::ALL_METHOD == $type ) {
             $this->type = $type;
         } else {
-            $this->type = self::GET_METHOD;
+            $this->type = Request::GET_METHOD;
         }
 
         return $this;

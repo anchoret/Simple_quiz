@@ -76,7 +76,7 @@ class Router
             $route = $this->_findRoute($current, $paths);
         }
         if ($route instanceof Route) {
-            die(var_dump($route));
+
             return $route;
         } else {
             throw new Exceptions\RouteNotFoundException(
@@ -193,7 +193,7 @@ class Router
 
     protected function isSameRequestMethod(Route $route)
     {
-        if (Route::ALL_METHOD == $route->getType() ||
+        if (Request::ALL_METHOD == $route->getType() ||
             $route->getType() == $this->request->getRequestMethod()) {
 
             return true;
