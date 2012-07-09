@@ -35,6 +35,11 @@ class Kernel
         $loader->setFailNamespace(__DIR__.'/../source');
         $loader->register();
 
+        return $this;
+    }
+
+    public function start()
+    {
         $this->request = new Request();
         $this->request->bindGlobalVars();
 
@@ -43,11 +48,6 @@ class Kernel
 
         $this->controller = $this->findController($this->route->getAction());
 
-        return $this;
-    }
-
-    public function start()
-    {
         $refMethod = new \ReflectionMethod($this->controller[0],
             $this->controller[1]);
         $paramNeedleArray = $refMethod->getParameters();
@@ -68,7 +68,13 @@ class Kernel
             }
         }
 
-        call_user_func_array($this->controller, $callParams);
+        $response = call_user_func_array($this->controller, $callParams);
+
+        if (!$response instanceof HTTP\Response) {
+            throw new Exceptions\WrongActionReturnParameter($response);
+        } else {
+            $response->sendToClient();
+        }
     }
 
     public function getClassLoader()

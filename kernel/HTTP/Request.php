@@ -4,6 +4,11 @@ namespace Kernel\HTTP;
 
 class Request
 {
+    const GET_METHOD = 'GET';
+
+    const POST_METHOD = 'POST';
+
+    const ALL_METHOD = 'ALL';
 
     /**
      * @var array
