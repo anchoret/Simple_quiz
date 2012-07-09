@@ -8,6 +8,11 @@ namespace Kernel\Routing;
  */
 class Route
 {
+    const GET_METHOD = 'GET';
+
+    const POST_METHOD = 'POST';
+
+    const ALL_METHOD = 'ALL';
     /**
      * @var string
      */
@@ -100,10 +105,10 @@ class Route
 
     public function setType($type) {
         $type = strtoupper($type);
-        if ('POST' == $type || 'ALL' == $type ) {
+        if (self::POST_METHOD == $type || self::ALL_METHOD == $type ) {
             $this->type = $type;
         } else {
-            $this->type = 'GET';
+            $this->type = self::GET_METHOD;
         }
 
         return $this;

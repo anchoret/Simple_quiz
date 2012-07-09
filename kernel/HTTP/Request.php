@@ -80,6 +80,52 @@ class Request
         return $this->requestURI;
     }
 
+    /**
+     * Returns true if the request is a XMLHttpRequest.
+     *
+     * It works if your JavaScript library set an X-Requested-With HTTP header,
+     * like jQuer.
+     *
+     * @return Boolean true if the request is an AJAX or false
+     */
+    public function isAjaxRequest()
+    {
+        return 'XMLHttpRequest' == $this->getHeaderValue('X-Requested-With');
+    }
+
+    public function getGetValue($name, $default = null)
+    {
+        return isset($this->get[$name])?$this->get[$name]:$default;
+    }
+
+    public function getPostValue($name, $default = null)
+    {
+        return isset($this->post[$name])?$this->post[$name]:$default;
+    }
+
+    public function getServerValue($name, $default = null)
+    {
+        return isset($this->server[$name])?$this->server[$name]:$default;
+    }
+
+    public function getHeaderValue($name, $default = null)
+    {
+        return isset($this->header[$name])?$this->header[$name]:$default;
+    }
+
+    public function getValue($name, $default = null)
+    {
+        return $this->getHeaderValue($name,
+            $this->getServerValue($name,
+                $this->getPostValue($name,
+                    $this->getGetValue($name, $default))));
+    }
+
+    public function getRequestMethod()
+    {
+        return $this->getServerValue('REQUEST_METHOD',"GET");
+    }
+
     protected function setRequestURI($requestURI) {
         $requestURI = urldecode($requestURI);
         $requestURI =
