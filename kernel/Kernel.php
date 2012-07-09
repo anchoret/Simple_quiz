@@ -98,7 +98,7 @@ class Kernel
         }
         $tryCallable = array($controllerObject, $action.'Action');
         if (!is_callable($tryCallable)) {
-            Exceptions\NotFoundActionException($tryClass, $action.'Action');
+            throw new Exceptions\NotFoundActionException($tryClass, $action.'Action');
         } else {
             return $tryCallable;
         }
