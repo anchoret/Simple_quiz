@@ -2,11 +2,12 @@
 namespace QuizModule\Controller;
 
 use Kernel\Controller\AbstractController;
+use Kernel\HTTP\Response;
 
 class MainController extends AbstractController
 {
-    public function indexAction($id, $opt, $count, $view = 555)
+    public function indexAction()
     {
-        return 'Привет, Мир!!';
+        return new Response('Привет, Мир!!');
     }
 }
