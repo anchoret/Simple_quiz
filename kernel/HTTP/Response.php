@@ -160,7 +160,7 @@ class Response
             throw new Exceptions\WrongResponseContentException($content);
         }
 
-        $this->content = (string) $content;
+        $this->content = (string) $content . ob_get_clean();
     }
 
     public function getContent()

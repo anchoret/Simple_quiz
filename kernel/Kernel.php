@@ -67,11 +67,12 @@ class Kernel
                 $callParams[$param->getPosition()] = $paramValuesArray[$param->getName()];
             }
         }
-
+        ob_start();
         $response = call_user_func_array($this->controller, $callParams);
 
         if (!$response instanceof HTTP\Response) {
-            throw new Exceptions\WrongActionReturnParameter($response);
+            throw new Exceptions\WrongActionReturnParameterException($response,
+                get_class($this->controller[0]) . "::" . $this->controller[1]);
         } else {
             $response->sendToClient();
         }
