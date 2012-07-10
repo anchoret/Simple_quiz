@@ -4,6 +4,7 @@ namespace Kernel;
 use Kernel\Routing\Router;
 use Kernel\HTTP\Request;
 use Kernel\Controller\AbstractController;
+use Kernel\ServiceContainer\Container;
 
 class Kernel
 {
@@ -44,6 +45,8 @@ class Kernel
         $this->request->bindGlobalVars();
 
         $router = Router::getInstance($this->request, __DIR__.'/../config/routing.ini');
+        $container = Container::getInstance();
+        $container->add('kernel.router', $router);
         $this->route = $router->findRoute();
 
         $this->controller = $this->findController($this->route->getAction());
@@ -66,6 +69,8 @@ class Kernel
                 $callParams[$param->getPosition()] = $paramValuesArray[$param->getName()];
             }
         }
+        $controller = $this->controller[0];
+        $controller->setContainer($container);
         ob_start();
         $response = call_user_func_array($this->controller, $callParams);
 
