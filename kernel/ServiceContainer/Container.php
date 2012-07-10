@@ -1,7 +1,7 @@
 <?php
 namespace Kernel\ServiceContainer;
 
-use ProxyService;
+use Kernel\ServiceContainer\ProxyService;
 use Kernel\Exceptions;
 
 /**
@@ -42,6 +42,9 @@ class Container {
     public function get($name)
     {
         if (isset($this->services[$name])) {
+            if ($this->services[$name] instanceof ProxyService) {
+                $this->services[$name] = $this->services[$name]->createService();
+            }
             return $this->services[$name];
         } else {
             throw new Exceptions\UndefinedServiceContainerException($name);
@@ -60,7 +63,6 @@ class Container {
     private function setParameter($name, $value)
     {
         if (preg_match_all('/%[a-z._]+%/', $value, $matches)){
-            //die(var_dump($matches));
             $patArray = array();
             $repArray = array();
             foreach ($matches[0] as $match) {
@@ -86,15 +88,31 @@ class Container {
                 $this->setParameter($name, $value);
             }
         }
+        $services = parse_ini_file($this->getParameter('common.services'), true);
+        foreach ($services as $name => $values) {
+            $this->setService($this->createProxyService($name, $values));
+        }
     }
 
-    private function setService($name,array $values)
+    private function setService(ProxyService $proxy)
     {
-        $this->services[$name] = $this->createProxyService($name, $values);
+        $this->services[$proxy->getName()] = $proxy;
     }
 
-    private function createProxyService($name,array $values)
+    private function createProxyService($serviceName, array $values)
     {
-
+        $class = $values['class'];
+        $params = array();
+        foreach ($values as $name => $value) {
+            if ($name == 'class') {
+                continue;
+            }
+            if (preg_match('/^%[a-z.]+%$/', $value)) {
+                $params[$name] = $this->getParameter(substr($value, 1, strlen($value)-2));
+            } else {
+                $params[$name] = $value;
+            }
+        }
+        return new ProxyService($serviceName, $class, $params);
     }
 }
