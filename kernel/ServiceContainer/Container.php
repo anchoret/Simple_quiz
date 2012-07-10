@@ -51,6 +51,17 @@ class Container {
         }
     }
 
+    public function add($name, $object)
+    {
+        if (!isset($this->services[$name])) {
+            $this->services[$name] = $object;
+
+            return true;
+        }
+
+        return false;
+    }
+
     public function getParameter($name)
     {
         if (isset($this->params[$name])) {
