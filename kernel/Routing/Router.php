@@ -125,7 +125,7 @@ class Router
                 $this->request->getServerVariable('SERVER_NAME') . '/' . $url;
         }
 
-        return urlencode($url);
+        return $url;
     }
 
     public function getParameters(Route $route)
@@ -154,7 +154,7 @@ class Router
         if(count($paths) == 0) {
             if (($route = $node->getRoute()) instanceof Route &&
                 $this->isSameRequestMethod($route)) {
-                
+
                 return $route;
             } elseif($this->isSameRequestMethod($route)) {
                 return false;
@@ -165,7 +165,7 @@ class Router
             if (($current = $node->getChild(current($paths))) !== false &&
                 ($route = $this->_findRoute($current, array_slice($paths, 1)))
                     !== false) {
-                
+
                 return $route;
             }
             if (($current = $node->getChild(self::REQ)) !== false &&
@@ -181,7 +181,7 @@ class Router
                 return $route;
             }
         }
-        
+
 //        for ($i = 0; $i < count($paths); $i++){
 //            if ($current->getChild($paths[$i]) !== false) {
 //                $current = $current->getChild($paths[$i]);

@@ -71,6 +71,8 @@ class Kernel
         }
         $controller = $this->controller[0];
         $controller->setContainer($container);
+        $controller->setRequest($this->request);
+
         ob_start();
         $response = call_user_func_array($this->controller, $callParams);
 
