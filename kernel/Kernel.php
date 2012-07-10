@@ -51,7 +51,6 @@ class Kernel
         $refMethod = new \ReflectionMethod($this->controller[0],
             $this->controller[1]);
         $paramNeedleArray = $refMethod->getParameters();
-        $router = Router::getInstance();
         $paramArray = $router->getParameters($this->route);
         $paramValuesArray = array_merge($this->route->getDefaults(), $paramArray);
         $callParams = array();
