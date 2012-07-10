@@ -73,10 +73,14 @@ class Router
         if (count($paths) == 1 && $paths[0] == '') {
             $route = $this->_findEmptyRoute($current);
         } else {
-            $route = $this->_findRoute($current, $paths);
+            $pointer = $this->_findRoute($current, $paths);
+            if($pointer instanceof RouteNode) {
+                $route = $this->_findEmptyRoute($pointer);
+            } else {
+                $route = $pointer;
+            }
         }
         if ($route instanceof Route) {
-
             return $route;
         } else {
             throw new Exceptions\RouteNotFoundException(
@@ -84,7 +88,7 @@ class Router
         }
     }
 
-        /**
+    /**
      * Generate URL by parameters.
      *
      * @param string $name
@@ -130,52 +134,79 @@ class Router
         $parts = explode('/', $route->getPattern());
         $count = 0;
         $parameters = array();
+        if ($parts[0] == "") {
+            array_shift($parts);
+        }
         foreach ($parts as $part) {
-            if ($part != '' && preg_match('/^{[a-zA-Z]+}$/', $part)) {
+            if (preg_match('/^{[a-zA-Z]+}$/', $part)) {
                 if (isset($paths[$count])) {
                     $parameters[substr($part, 1, strlen($part)-2)] = $paths[$count];
                 }
             }
-            if ($part != '') {
-                ++$count;
-            }
+            ++$count;
         }
 
         return $parameters;
     }
 
-    protected function _findRoute (RouteNode $current, $paths)
+    protected function _findRoute (RouteNode $node, $paths)
     {
-        for ($i = 0; $i < count($paths); $i++){
-            if (($node = $current->getChild($paths[$i])) !== false) {
-                $current = $node;
+        if(count($paths) == 0) {
+            if (($route = $node->getRoute()) instanceof Route &&
+                $this->isSameRequestMethod($route)) {
+                
+                return $route;
+            } elseif($this->isSameRequestMethod($route)) {
+                return false;
             } else {
-                if (($node = $current->getChild(self::REQ)) !== false) {
-                    $current = $node;
-                    if( ($route = $this->_findRoute($node, array_slice($paths, 1)))
-                        instanceof Route && $this->isSameRequestMethod($route)) {
+                return $node;
+            }
+        } else {
+            if (($current = $node->getChild(current($paths))) !== false &&
+                ($route = $this->_findRoute($current, array_slice($paths, 1)))
+                    !== false) {
+                
+                return $route;
+            }
+            if (($current = $node->getChild(self::REQ)) !== false &&
+                ($route = $this->_findRoute($current, array_slice($paths, 1)))
+                    !== false) {
 
-                        return $route;
-                    }
-                }
-                if  (($node = $current->getChild(self::OPT)) !== false) {
-                    $current = $node;
-                    if( ($route = $this->_findRoute($node, array_slice($paths, 1)))
-                        instanceof Route && $this->isSameRequestMethod($route)) {
+                return $route;
+            }
+            if (($current = $node->getChild(self::OPT)) !== false &&
+                ($route = $this->_findRoute($current, array_slice($paths, 1)))
+                    !== false) {
 
-                        return $route;
-                    }
-                }
+                return $route;
             }
         }
-        if (($route = $current->getRoute()) instanceof Route &&
-            $this->isSameRequestMethod($route)) {
-
-            return $route;
-        } else {
-
-            return $this->_findEmptyRoute($current);
-        }
+        
+//        for ($i = 0; $i < count($paths); $i++){
+//            if ($current->getChild($paths[$i]) !== false) {
+//                $current = $current->getChild($paths[$i]);
+//            }
+//            if ($current->getChild(self::REQ) !== false) {
+//                $current = $current->getChild(self::REQ);
+//            }
+//            if ($current->getChild(self::OPT) !== false) {
+//                $current = $current->getChild(self::OPT);
+//            }
+//            if($current instanceof RouteNode &&
+//                ($route = $this->_findRoute($current, array_slice($paths, 1)))
+//                instanceof Route && $this->isSameRequestMethod($route)) {
+//
+//                return $route;
+//            }
+//        }
+//        if (($route = $current->getRoute()) instanceof Route &&
+//            $this->isSameRequestMethod($route)) {
+//
+//            return $route;
+//        } else {
+//
+//            return $this->_findEmptyRoute($current);
+//        }
     }
 
     protected function _findEmptyRoute (RouteNode $node)
