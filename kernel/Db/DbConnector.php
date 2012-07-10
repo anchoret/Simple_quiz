@@ -16,6 +16,8 @@ class DbConnector {
     private $password;
     private $charset;
 
+    private $openTransaction = false;
+
     private static $connect = null;
 
     public function __construct($driver, $host, $port, $name, $user, $password, $charset)
@@ -40,5 +42,78 @@ class DbConnector {
         }
 
         return static::$connect;
+    }
+
+    public function beginTransaction(){
+        if($openTransaction === false) {
+           return $openTransaction = $this->getConnection()->beginTransaction();
+        }
+
+        return false;
+    }
+    public function commitTransaction()
+    {
+        if($openTransaction === false) {
+           return $openTransaction = $this->getConnection()->commit();
+        }
+
+        return false;
+    }
+    public function rollbackTransaction()
+    {
+        if($openTransaction === false) {
+           return $openTransaction = $this->getConnection()->rollBack();
+        }
+
+        return false;
+    }
+
+    public function errorCode()
+    {
+        return $this->getConnection()->errorCode();
+    }
+    public function errorInfo()
+    {
+        return $this->getConnection()->errorInfo();
+    }
+    public function execute($statement)
+    {
+        return $this->getConnection()->exec($statement);
+    }
+    public function getAttribute(integer $attr)
+    {
+        return $this->getConnection()->getAttribute($attr);
+    }
+    public function getAvailableDrivers()
+    {
+        return $this->getConnection()->getAvailableDrivers();
+    }
+    public function inTransaction()
+    {
+        return $this->getConnection()->inTransaction();
+    }
+    public function lastInsertId($name = null)
+    {
+        if ($name === null) {
+            return $this->getConnection()->lastInsertId();
+        } else {
+            return $this->getConnection()->lastInsertId($name);
+        }
+    }
+    public function prepare($statement, $options = array())
+    {
+        return $this->getConnection()->prepare($statement, $options = array());
+    }
+    public function query($statement)
+    {
+        return $this->getConnection()->query($statement);
+    }
+    public function quote($string)
+    {
+        return $this->getConnection()->quote($string);
+    }
+    public function setAttribute($attribute , $value)
+    {
+        return $this->getConnection()->setAttribute($attribute , $value);
     }
 }
