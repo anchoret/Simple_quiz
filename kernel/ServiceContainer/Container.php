@@ -124,6 +124,6 @@ class Container {
                 $params[$name] = $value;
             }
         }
-        return new ProxyService($serviceName, $class, $params);
+        return new ProxyService($this, $serviceName, $class, $params);
     }
 }
