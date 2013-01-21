@@ -12,7 +12,7 @@ use Kernel\Exceptions;
  */
 class Router
 {
-    const CACHE_FILE = '/var/www/quiz/cache/routing.cache';
+    const CACHE_FILE = 'routing.cache';
     /**
      * Label for optional path's variable
      */
@@ -46,6 +46,11 @@ class Router
      * @var \Kernel\HTTP\Request
      */
     private $request;
+
+    /**
+     * @var string|null
+     */
+    private $cacheFolder = null;
 
     /**
      *
@@ -149,6 +154,11 @@ class Router
         return $parameters;
     }
 
+    public function setCacheFolder($path)
+    {
+        $this->cacheFolder = $path;
+    }
+
     protected function _findRoute (RouteNode $node, $paths)
     {
         if(count($paths) == 0) {
@@ -181,32 +191,6 @@ class Router
                 return $route;
             }
         }
-
-//        for ($i = 0; $i < count($paths); $i++){
-//            if ($current->getChild($paths[$i]) !== false) {
-//                $current = $current->getChild($paths[$i]);
-//            }
-//            if ($current->getChild(self::REQ) !== false) {
-//                $current = $current->getChild(self::REQ);
-//            }
-//            if ($current->getChild(self::OPT) !== false) {
-//                $current = $current->getChild(self::OPT);
-//            }
-//            if($current instanceof RouteNode &&
-//                ($route = $this->_findRoute($current, array_slice($paths, 1)))
-//                instanceof Route && $this->isSameRequestMethod($route)) {
-//
-//                return $route;
-//            }
-//        }
-//        if (($route = $current->getRoute()) instanceof Route &&
-//            $this->isSameRequestMethod($route)) {
-//
-//            return $route;
-//        } else {
-//
-//            return $this->_findEmptyRoute($current);
-//        }
     }
 
     protected function _findEmptyRoute (RouteNode $node)
@@ -257,16 +241,20 @@ class Router
 
     protected function loadRoutingMap()
     {
-        if (!file_exists(self::CACHE_FILE) ||
-            filemtime(self::CACHE_FILE) <= filemtime($this->resource)) {
+        if (empty($this->cacheFolder) || !is_writable($this->cacheFolder)) {
+            $this->buildRoutingMap();
+        } elseif (!file_exists($this->_getCacheFile()) ||
+            filemtime($this->_getCacheFile()) <= filemtime($this->resource)) {
 
             $this->buildRoutingMap();
-            if ($file = fopen(self::CACHE_FILE, "w")) {
+            $oldUmask = umask(0);
+            if ($file = fopen($this->_getCacheFile(), "w")) {
                 fwrite($file, serialize($this->routing));
                 fclose($file);
+                umask($oldUmask);
             }
         } else {
-            $this->routing = unserialize(file_get_contents(self::CACHE_FILE));
+            $this->routing = unserialize(file_get_contents($this->_getCacheFile()));
         }
     }
 
@@ -330,8 +318,15 @@ class Router
     }
 
     //Part of singleton's implementation.
-    protected function __wakeup(){
+    protected function __wakeup()
+    {
     }
-    protected function __clone(){
+    protected function __clone()
+    {
+    }
+
+    private function _getCacheFile()
+    {
+        return $this->cacheFolder . DIRECTORY_SEPARATOR . self::CACHE_FILE;
     }
 }

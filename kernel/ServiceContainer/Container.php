@@ -14,6 +14,8 @@ class Container {
 
     const MAIN_CONFIG = 'parameters.ini';
 
+    const INDIVIDUAL_CONFIG_PREFIX = 'individual.';
+
     private $params = array();
 
     private $services = array();
@@ -27,6 +29,12 @@ class Container {
         $this->setParameter('kernel.root_dir', $rootDir);
         $config = parse_ini_file($this->getParameter('kernel.root_dir') .
             DIRECTORY_SEPARATOR . 'config'. DIRECTORY_SEPARATOR . self::MAIN_CONFIG, true);
+        $individualConfigFile = $this->getParameter('kernel.root_dir') .
+            DIRECTORY_SEPARATOR . 'config'. DIRECTORY_SEPARATOR . self::INDIVIDUAL_CONFIG_PREFIX . self::MAIN_CONFIG;
+        if (is_readable($individualConfigFile)) {
+            $individualConfig = parse_ini_file($individualConfigFile, true);
+            $config = array_replace_recursive($config, $individualConfig);
+        }
         $this->fillContainer($config);
     }
 

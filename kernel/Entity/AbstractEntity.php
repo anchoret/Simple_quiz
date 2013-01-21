@@ -21,7 +21,7 @@ class AbstractEntity {
     {
         $this->class = $class;
         $this->file = $file;
-        $map = $this->_getMap();
+        //$map = $this->_getMap();
         foreach ($properties as $property=>$value) {
             $method = 'set'.ucfirst(isset($map[$property])?$map[$property]:$property);
             $this->$method($value);

@@ -11,6 +11,7 @@ use Kernel\Entity\AbstractEntity;
 class DbTableManager {
     private $cacheFolder;
     private $extension;
+    private $tables = array();
     public function __construct($cacheFolder, $extension = 'cache')
     {
         $this->cacheFolder = $cacheFolder;
@@ -45,7 +46,6 @@ class DbTableManager {
         $refClass = new \ReflectionClass($classPath);
         $classDoc = $refClass->getDocComment();
         preg_match_all('/@@Table[A-Z][a-zA-Z ]+=[\s\'\"а-яА-Яa-zA-Z]+\n/', $classDoc, $matches);
-        die(var_dump($matches));
     }
     protected function loadCache($cacheFileName)
     {

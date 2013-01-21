@@ -44,8 +44,9 @@ class Kernel
         $this->request = new Request();
         $this->request->bindGlobalVars();
 
-        $router = Router::getInstance($this->request, __DIR__.'/../config/routing.ini');
         $container = Container::getInstance();
+        $router = Router::getInstance($this->request, __DIR__.'/../config/routing.ini');
+        $router->setCacheFolder($container->getParameter('common.cache.folder'));
         $container->add('kernel.router', $router);
         $this->route = $router->findRoute();
 
