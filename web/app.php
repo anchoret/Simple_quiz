@@ -12,6 +12,13 @@ try{
         $content = '<div>' . $e->getMessage() . '</div>';
         $content .= '<div><ul>';
         foreach ($e->getTrace() as $call) {
+            foreach ($call['args'] as $key => $arg) {
+                if (is_object($arg)) {
+                    $call['args'][$key] = get_class($arg);
+                } elseif(is_array($arg)) {
+                    $call['args'][$key] = "array( " . implode(",", $arg) .")";
+                }
+            }
             $content .= "<li>Вызов " . $call['class'] . $call['type'] . $call['function'] .
                 (count($call['args'])>0 ? (' с параметрами: ' . implode('; ', $call['args']))
                     : ' без параметров<br/>') .
