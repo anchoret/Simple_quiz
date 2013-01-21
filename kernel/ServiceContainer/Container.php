@@ -126,7 +126,7 @@ class Container {
             if ($name == 'class') {
                 continue;
             }
-            if (preg_match('/^%[a-z.]+%$/', $value)) {
+            if (preg_match('/^%[a-z._]+%$/', $value)) {
                 $params[$name] = $this->getParameter(substr($value, 1, strlen($value)-2));
             } else {
                 $params[$name] = $value;

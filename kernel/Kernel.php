@@ -2,6 +2,8 @@
 namespace Kernel;
 
 use Kernel\Routing\Router;
+use Kernel\HTTP\Response;
+use Kernel\View\View;
 use Kernel\HTTP\Request;
 use Kernel\Controller\AbstractController;
 use Kernel\ServiceContainer\Container;
@@ -72,10 +74,12 @@ class Kernel
         }
         $controller = $this->controller[0];
         $controller->setContainer($container);
+        $controller->setView($container->get('kernel.view'));
         $controller->setRequest($this->request);
-
         ob_start();
         $response = call_user_func_array($this->controller, $callParams);
+
+        $response = $this->_processResponse($container, $response);
 
         if (!$response instanceof HTTP\Response) {
             throw new Exceptions\WrongActionReturnParameterException($response,
@@ -116,5 +120,25 @@ class Kernel
         } else {
             return $tryCallable;
         }
+    }
+
+    private function _processResponse($container, $response)
+    {
+        if ($response instanceof Response)
+        {
+            return $response;
+        }
+
+        $view = $container->get('kernel.view');
+        if (empty($response)) {
+            $content = $view->render(array($this->controller[0], $this->controller[1]));
+            $response = new Response($content);
+            unset($content);
+        } elseif (is_string($response)) {
+            $content = $view->render($response);
+            $response = new Response($content);
+        }
+
+        return $response;
     }
 }

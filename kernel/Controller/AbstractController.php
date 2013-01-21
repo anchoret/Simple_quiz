@@ -2,6 +2,8 @@
 namespace Kernel\Controller;
 
 use Kernel\ServiceContainer\Container;
+use Kernel\View\Layout;
+use Kernel\View\View;
 use Kernel\HTTP\Request;
 use Kernel\HTTP\Response;
 
@@ -12,11 +14,25 @@ use Kernel\HTTP\Response;
  */
 abstract class AbstractController {
 
+    protected $view = null;
+
+    protected $layout = null;
+
     private $container = null;
 
     public function setContainer(Container $container)
     {
         $this->container = $container;
+    }
+
+    public function setView(View $view)
+    {
+        $this->view = $view;
+    }
+
+    public function setLayout(Layout $layout)
+    {
+        $this->layout = $layout;
     }
 
     public function getContainer()

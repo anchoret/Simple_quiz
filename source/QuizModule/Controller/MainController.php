@@ -8,6 +8,7 @@ class MainController extends AbstractController
 {
     public function indexAction()
     {
-        return new Response('Привет, Мир!!');
+        $this->view->name = 'Алексей Сергеевич';
+        return "quiz::main::index";
     }
 }
